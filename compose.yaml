@@ -1,0 +1,28 @@
+services:
+  web:
+    build: .
+    links:
+      - postgres:postgres
+    env_file:
+      - path: .env
+    environment:
+      - POSTGRES_HOST=postgres
+    volumes:
+      - ./data:/data
+    ports:
+      - 5000:5000
+    depends_on:
+      - postgres
+  
+  postgres:
+    image: postgres
+    env_file:
+      - path: .env
+    restart: always
+    volumes:
+      - ./data/database:/var/lib/postgresql/data
+    expose:
+      - ${POSTGRES_PORT}
+
+volumes:
+  jpdata:
