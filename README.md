@@ -14,3 +14,17 @@ Flask webserver with a simple UI for managing kanji mnemonics and words.
 
 [<img src="screenshot_character.jpg" alt="screenshot character" width="512">](screenshot_character.jpg)
 [<img src="screenshot_words.jpg" alt="screenshot_words" width="512">](screenshot_words.jpg)
+
+## Installation
+
+```bash
+$ docker compose up --build -d
+```
+
+To initialize the database
+
+```bash
+$ docker exec -it jpdata-web-1 flask character insert
+$ docker exec -it jpdata-web-1 flask decomp insert
+$ docker exec -it jpdata-web-1 flask heisig insert
+```
