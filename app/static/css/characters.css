@@ -1,0 +1,37 @@
+#characters {
+    display: flex;
+    flex-wrap: wrap;
+    width: 700px;
+}
+
+.character {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 60px;
+    height: 60px;
+    margin: 3px;
+}
+
+.literal {
+    font-family: ms mincho;
+    font-size: 32px;
+}
+
+.literal a {
+    text-decoration: none;
+    color: var(--lightblue);
+}
+
+.literal a:hover {
+    text-decoration: underline;
+}
+
+.has-mnemonic a {
+    color: var(--darkblue);
+}
+
+.index {
+    font-family: monospace;
+}

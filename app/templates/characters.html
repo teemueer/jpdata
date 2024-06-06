@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/characters.css') }}">
+{% endblock %}
+
+{% block content %}
+<h1>Characters</h1>
+<div id="characters">
+    {% for character, mnemonic in characters %}
+    <div class="character">
+        <div class="literal {% if mnemonic %}has-mnemonic{% endif %}">
+            <a href="{{ url_for('characters.character', literal=character.literal) }}" title="{{ mnemonic.keyword or character.heisig_keyword or character.ucs }}">{{ character.literal }}</a>
+        </div>
+        <div class="index">{{ character.heisig6 }}</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

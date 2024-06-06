@@ -1,0 +1,12 @@
+#pages {
+    margin-bottom: 250px;
+}
+
+img {
+    width: 800px;
+}
+
+#word {
+    position: fixed;
+    bottom: 0;
+}

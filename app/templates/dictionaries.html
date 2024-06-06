@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% from "macros.html" import generic_form %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dictionaries.css') }}">
+{% endblock %}
+
+{% block content %}
+{{ generic_form(form, "word") }}
+<h1>Dictionary '{{ name }}'</h1>
+<div id="pages">
+    {% for dictionary in dictionaries %}
+    <div class="page">
+        <img src="{{ url_for('dictionaries.page', name=name, page=dictionary.page) }}">
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

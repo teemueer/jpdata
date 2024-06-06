@@ -1,0 +1,11 @@
+#words {
+    max-width: 1000px;
+}
+
+.kanji, .kana, .timestamp {
+    text-wrap: nowrap;
+}
+
+.timestamp {
+    font-family: monospace;
+}

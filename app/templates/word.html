@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% from "macros.html" import generic_form %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/word.css') }}">
+{% endblock %}
+
+{% block content %}
+<h1>Word</h1>
+{{ generic_form(form, "word") }}
+{% endblock %}

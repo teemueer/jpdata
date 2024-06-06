@@ -1,0 +1,24 @@
+#mnemonics {
+    max-width: 1000px;
+}
+
+.literal {
+    font-size: 32px;
+    font-family: ms mincho;
+}
+
+.keyword, .timestamp {
+    text-wrap: nowrap;
+}
+
+.keyword {
+    font-weight: bold;
+}
+
+.story {
+    font-style: italic;
+}
+
+.timestamp {
+    font-family: monospace;
+}

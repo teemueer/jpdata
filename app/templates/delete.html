@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Delete</h1>
+<p>Are you sure you want to delete {{ obj }}?</p>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <p>{{ form.yes }} {{ form.no }}</p>
+</form>
+{% endblock %}

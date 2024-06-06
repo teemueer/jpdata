@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% from "macros.html" import generic_form %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/character.css') }}">
+{% endblock %}
+
+{% block content %}
+<h1>Character</h1>
+<table id="character" border="1">
+    <tr>
+        <th>Literal:</th>
+        <td id="literal">{{ character.literal }}</td>
+    </tr>
+    {%- if character.jis208 %}
+    <tr>
+        <th>JIS:</th>
+        <td id="jis208" class="index">{{ character.jis208 }}</td>
+    </tr>
+    {%- else %}
+    {%- if character.jis212 %}
+    <tr>
+        <th>JIS212:</th>
+        <td id="jis212" class="index">{{ character.jis212 }}</td>
+    </tr>
+    {%- endif %}
+    {%- if character.jis213 %}
+    <tr>
+        <th>JIS213:</th>
+        <td id="jis213" class="index">{{ character.jis213 }}</td>
+    </tr>
+    {%- endif %}
+    {%- endif %}
+    <tr>
+        <th>Decomposition:</th>
+        <td id="decomps">
+            {% for decomp in decomps %}
+            <div class="decomp">{{ decomp.decomp }}</div>
+            {% endfor %}
+        </td>
+    </tr>
+    <tr>
+        <th>Radical:</th>
+        <td>{{ character.radical }}</td>
+    </tr>
+    <tr>
+        <th>Stroke count:</th>
+        <td class="stroke-count">{{ character.stroke_count }}</td>
+    </tr>
+    <tr>
+        <th>Classification:</th>
+        <td class="grade">
+            {% set grade = character.grade %}
+            {% if not grade %}
+            Rare
+            {% elif grade == 1 %}
+            First Grade
+            {% elif grade == 2 %}
+            Second Grade
+            {% elif grade == 3 %}
+            Third Grade
+            {% elif grade == 4 %}
+            Fourth Grade
+            {% elif grade == 5 %}
+            Fifth Grade
+            {% elif grade == 6 %}
+            Sixth Grade
+            {% elif grade == 8 %}
+            General-Use
+            {% elif grade == 9 %}
+            Name-Only
+            {% elif grade == 10 %}
+            Name-Only (variant)
+            {% endif %}
+        </td>
+    </tr>
+    {% if character.heisig_keyword %}
+    <tr>
+        <th>Heisig keyword:</th>
+        <td id="heisig-keyword">{{ character.heisig_keyword }}</td>
+    </tr>
+    {% endif %}
+    {% if meanings %}
+    <tr>
+        <th>Meanings:</th>
+        {% set meanings = meanings|map(attribute="meaning") %}
+        <td id="meanings">{{ meanings|join(", ") }}</td>
+    </tr>
+    {% endif %}
+    {% set onyomi = readings|selectattr("r_type", "==", "ja_on")|map(attribute="reading")|list %}
+    {% if onyomi %}
+    <tr>
+        <th>Onyomi:</th>
+        <td id="onyomi">{{ onyomi|join("、") }}</td>
+    </tr>
+    {% endif %}
+    {% set kunyomi = readings|selectattr("r_type", "==", "ja_kun")|map(attribute="reading")|list %}
+    {% if kunyomi %}
+    <tr>
+        <th>Kunyomi:</th>
+        <td id="kunyomi">
+            {% for kun in kunyomi %}
+            <div class="kunyomi">{{ kun }}</div>
+            {% endfor %}
+        </td>
+    </tr>
+    {% endif %}
+    {% if variants %}
+    <tr>
+        <th>Variants:</th>
+        <td id="variants">
+            {% for variant in variants %}
+            <a class="variant" href="{{ url_for('characters.character', literal=variant.literal) }}">{{ variant.literal }}</a>
+            {% endfor %}
+        </td>
+    </tr>
+    {% endif %}
+</table>
+
+{% if character.nelson_n %}
+<table id="indexes" border="1">
+    <tr>
+        <th>Dictionary</th>
+        <th>Index</th>
+    </tr>
+    {% if character.heisig6 %}
+    <tr>
+        <td class="dictionary">Heisig 6th</td>
+        <td class="index">{{ character.heisig6 }}</td>
+    </tr>
+    {% elif character.heisig %}
+    <tr>
+        <td class="dictionary">Heisig 5th</td>
+        <td class="index">{{ character.heisig }}</td>
+    </tr>
+    {% endif %}
+    {% if character.nelson_n %}
+    <tr>
+        <td class="dictionary">New Nelson</td>
+        <td class="index">
+            <a href="{{ url_for('dictionaries.idx', name='nelson_n', idx=character.nelson_n) }}">{{ character.nelson_n }}</a>
+        </td>
+    </tr>
+    {% endif %}
+    {% if character.halpern_kkd %}
+    <tr>
+        <td class="dictionary">Halpern KKD</td>
+        <td class="index">
+            <a href="{{ url_for('dictionaries.idx', name='halpern_kkd', idx=character.halpern_kkd) }}">{{ character.halpern_kkd }}</a>
+        </td>
+    </tr>
+    {% endif %}
+    {% if character.halpern_kkld_2ed %}
+    <tr>
+        <td class="dictionary">Halpern KKLD</td>
+        <td class="index">
+            <a href="{{ url_for('dictionaries.idx', name='halpern_kkld_2ed', idx=character.halpern_kkld_2ed) }}">{{ character.halpern_kkld_2ed }}</a>
+        </td>
+    </tr>
+    {% endif %}
+</table>
+{% endif %}
+
+{{ generic_form(mnemonic_form, "mnemonic") }}
+{{ generic_form(word_form, "word") }}
+
+{% if words %}
+<div id="words">
+    <h3>Words</h3>
+    {% for word in words %}
+    <span class="word">
+        <a href="{{ url_for('words.word', id=word.id, literal=character.literal) }}">{{ word.kanji }}【{{ word.kana }}】</a>
+    </span>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div id="links">
+    <h3>Links</h3>
+    <span>
+        <a href="https://kanji.koohii.com/study/kanji/{{ character.literal }}" target="_blank">Kanji Koohii</a>
+    </span>
+    <span>
+        <a href="https://www.kanjipedia.jp/search?k={{ character.literal }}&kt=1&sk=leftHand" target="_blank">Kanjipedia</a>
+    </span>
+    <span>
+        <a href="https://dictionary.goo.ne.jp/word/kanji/{{ character.literal }}" target="_blank">Goo</a>
+    </span>
+    <span>
+        <a href="https://en.wiktionary.org/wiki/{{ character.literal }}" target="_blank">Wiktionary</a>
+    </span>
+</table>
+
+{% endblock %}

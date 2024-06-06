@@ -1,0 +1,42 @@
+#character {
+    max-width: 250px;
+    float: left;
+}
+
+#literal {
+    font-family: ms mincho;
+    font-size: 42px;
+}
+
+#heisig-keyword {
+    font-style: italic;
+}
+
+.decomp, .grade {
+    text-wrap: nowrap;
+}
+
+.stroke-count, .index {
+    font-family: monospace;
+    font-size: 14px;
+}
+
+#meanings {
+    font-style: italic;
+}
+
+#mnemonic, #word {
+    float: left;
+}
+
+#indexes {
+    float: right;
+}
+
+#words, #links {
+    clear: both;
+}
+
+#links span:not(:last-child)::after {
+    content: "/";
+}

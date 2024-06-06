@@ -1,0 +1,90 @@
+{% macro form_field(field) %}
+    <tr>
+        {% if field.type == "SubmitField" %}
+        <td colspan="2" align="right">{{ field }}</td>
+        {% else %}
+        <th>{{ field.label }}:</th>
+        {% if field.type in ("StringField", "PasswordField") %}
+        <td>{{ field(size=30) }}</td>
+        {% elif field.type == "TextAreaField" %}
+        <td>{{ field(cols=40, rows=5) }}</td>
+        {% else %}
+        <td>{{ field }}</td>
+        {% endif %}
+        {% endif %}
+    </tr>
+{% endmacro %}
+
+{% macro generic_form(form, id=none, title=none, method="POST", enctype=none) %}
+<form {% if id %}id="{{ id }}"{% endif %} action="" method="{{ method }}" {% if enctype -%}enctype="{{ enctype }}"{% endif -%} autocomplete="off">
+    {{ form.hidden_tag() }}
+    <table border="1">
+    {% if title %}
+    <tr>
+        <th colspan="2">{{ title }}</th>
+    </tr>
+    {% endif %}
+    {% for field in form %}
+        {% if field.widget.input_type != "hidden" %}
+        {{ form_field(field) }}
+        {% endif %}
+    {% endfor %}
+    {% if form.errors %}
+    <tr>
+        <td colspan="2">
+            <table>
+            {% for field, errors in form.errors.items() %}
+            {% for error in errors %}
+                <tr class="error">
+                    <td>{{ field }}:</td>
+                    <td>{{ error }}</td>
+                </tr>
+            {% endfor %}
+            {% endfor %}
+            </table>
+        </td>
+    </tr>
+    {% endif %}
+    </table>
+</form>
+{% endmacro %}
+
+{%- macro filters_form(form) -%}
+    <form id="filters" action="" method="GET">
+        <table border="1">
+            <tr>
+                <th>{{ form.search.label }}:</th>
+                <td colspan="3">{{ form.search(size=30) }}</td>
+                <td align="right">
+                    <button>Filter results</button>
+                </td>
+            </tr>
+            <tr>
+                <th>{{ form.order_by.label }}:</th>
+                <td>{{ form.order_by }}</td>
+                <td>{{ form.desc }}</td>
+                <th>{{ form.per_page.label }}:</th>
+                <td>{{ form.per_page }}</td>
+            </tr>
+        </table>
+    </form>
+{%- endmacro -%}
+
+
+{% macro render_pagination(pagination, endpoint) %}
+  <div class=pagination>
+  {%- for page in pagination.iter_pages() %}
+    {% if page %}
+      {% if page != pagination.page %}
+        {% set args = request.args.copy() %}
+        {% set _ = args.pop("page", default=0) %}
+        <a href="{{ url_for(endpoint, page=page, **args) }}">{{ page }}</a>
+      {% else %}
+        <strong>{{ page }}</strong>
+      {% endif %}
+    {% else %}
+      <span class=ellipsis>…</span>
+    {% endif %}
+  {%- endfor %}
+  </div>
+{% endmacro %}

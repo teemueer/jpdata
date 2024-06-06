@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "macros.html" import generic_form, filters_form, render_pagination %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mnemonics.css') }}">
+{% endblock %}
+
+{% block content %}
+<h1>Mnemonics</h1>
+<p>
+    <a href="{{ url_for('mnemonics.import_mnemonics') }}">Import mnemonics</a>
+</p>
+{{ filters_form(filters) }}
+{% if mnemonics.items %}
+<table id="mnemonics" border="1">
+    <tr>
+        <th>Literal</th>
+        <th>Keyword</th>
+        <th>Story</th>
+        <th>Timestamp</th>
+    </tr>
+    {% for mnemonic in mnemonics %}
+    <tr class="mnemonic">
+        <td class="literal">
+            <a href="{{ url_for('characters.character', literal=mnemonic.character_literal) }}">{{ mnemonic.character_literal }}</a>
+        </td>
+        <td class="keyword">{{ mnemonic.keyword }}</td>
+        <td class="story">{{ mnemonic.story or "-" }}</td>
+        <td class="timestamp">
+            {% set timestamp = mnemonic.time_updated or mnemonic.time_created %}
+            {{ timestamp.strftime("%Y-%m-%d %H:%M:%S") }}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No results</p>
+{% endif %}
+{{ render_pagination(mnemonics, "mnemonics.mnemonics") }}
+{% endblock %}

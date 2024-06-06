@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% from "macros.html" import generic_form %}
+
+{%- block content %}
+<h2>{{ title }}</h2>
+{{ generic_form(form, enctype="multipart/form-data") }}
+{%- endblock %}

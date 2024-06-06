@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% from "macros.html" import generic_form, filters_form, render_pagination %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/words.css') }}">
+{% endblock %}
+
+{% block content %}
+<h1>Words</h1>
+<h2>Add a new word</h2>
+{{ generic_form(word_form, "word") }}
+<p>
+    <a href="{{ url_for('words.import_words') }}">Import words</a>
+</p>
+<h2>Words</h2>
+{{ filters_form(filters) }}
+{% if words.items %}
+<table id="words" border="1">
+    <tr>
+        <th>Kanji</th>
+        <th>Kana</th>
+        <th>Meaning</th>
+        <th>Timestamp</th>
+    </tr>
+    {% for word in words %}
+    <tr class="word">
+        <td class="kanji">
+            <a href="{{ url_for('words.word', id=word.id) }}">{{ word.kanji }}</a>
+        </td>
+        <td class="kana">{{ word.kana }}</td>
+        <td class="meaning">{{ word.meaning or "-" }}</td>
+        <td class="timestamp">
+            {% set timestamp = word.time_updated or word.time_created %}
+            {{ timestamp.strftime("%Y-%m-%d %H:%M:%S") }}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No results</p>
+{% endif %}
+{{ render_pagination(words, "words.words") }}
+{% endblock %}

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JP-DATA</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    {% block css %}{% endblock %}
+</head>
+<body>
+    <div id="navigation">
+        {% if current_user.is_anonymous %}
+        {% set nav_items = [
+          ("main.index", "Home"),
+          ("auth.login", "Login"),
+        ] %}
+        {% else %}
+        {% set nav_items = [
+          ("main.index", "Home"),
+          ("characters.characters", "Characters"),
+          ("words.words", "Words"),
+          ("mnemonics.mnemonics", "Mnemonics"),
+          ("auth.logout", "Logout (%s)"|format(current_user.username)),
+        ] %}
+        {% endif %}
+        {% for endpoint, title in nav_items %}
+        <span>
+          {% if request.endpoint != endpoint %}
+          <a href="{{ url_for(endpoint) }}">{{ title }}</a>
+          {% else %}
+          {{ title }}
+          {% endif %}
+        </span>
+        {% endfor %}
+    </div>
+    {%- with flashes = get_flashed_messages(with_categories=true) %}
+    {%- if flashes %}
+    <ul id="flashes">
+      {%- for type, flash in flashes %}
+      <li class="{{ type }}">[{{ type|upper }}] {{ flash }}</li>
+      {%- endfor %}
+    </ul>
+    {%- endif %}
+    {%- endwith %}
+    <div id="content">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
