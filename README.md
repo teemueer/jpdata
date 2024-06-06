@@ -13,5 +13,4 @@ Flask webserver with a simple UI for managing kanji mnemonics and words.
 ## Screenshots
 
 [<img src="screenshot_character.jpg" alt="screenshot character" width="512">](screenshot_character.jpg)
-[<img src="screenshot_mnemonics.jpg" alt="screenshot_mnemonics" width="512">](screenshot_mnemonics.jpg)
 [<img src="screenshot_words.jpg" alt="screenshot_words" width="512">](screenshot_words.jpg)
