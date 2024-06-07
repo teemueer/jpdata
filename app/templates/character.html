@@ -7,7 +7,8 @@
 
 {% block content %}
 <h1>Character</h1>
-<div id="left">
+
+<div id="character-information">
 <table id="character" border="1">
     <tr>
         <th>Literal:</th>
@@ -163,8 +164,22 @@
 {% endif %}
 </div>
 
+<div id="forms">
 {{ generic_form(mnemonic_form, "mnemonic") }}
 {{ generic_form(word_form, "word") }}
+</div>
+
+<div id="neighbor-characters">
+    {% for nc in neighbor_characters %}
+    <div>
+        {% if nc.literal == character.literal %}
+        {{ nc.literal }}
+        {% else %}
+        <a href="{{ url_for('characters.character', literal=nc.literal) }}">{{ nc.literal }}</a>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
 
 {% if words %}
 <div id="words">

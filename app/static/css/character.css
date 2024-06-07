@@ -1,4 +1,12 @@
-#left {
+#character-information {
+    float: left;
+}
+
+#forms {
+    float: left;
+}
+
+#forms {
     float: left;
 }
 
@@ -32,6 +40,10 @@
 }
 
 #indexes {
+}
+
+#neighbor-characters {
+    float: left;
 }
 
 #words, #links {

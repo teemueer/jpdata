@@ -90,6 +90,13 @@ def character(literal):
                 Word.kanji.like(f"%{literal}%")
             ).order_by(Word.kana)
         ).all()
+    
+    idx = character.heisig6
+    if idx:
+        neighbor_characters = db.session.query(Character) \
+            .where(Character.heisig6.between(abs(idx-10), idx+10)).all()
+    else:
+        neighbor_characters = []
 
     return render_template(
         "character.html",
@@ -101,4 +108,5 @@ def character(literal):
         word_form=word_form,
         mnemonic_form=mnemonic_form,
         words=words,
+        neighbor_characters=neighbor_characters,
     )
