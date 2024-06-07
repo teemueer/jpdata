@@ -17,6 +17,20 @@ Flask webserver with a simple UI for managing kanji mnemonics and words.
 
 ## Installation
 
+Create a .env file at the project root and fill in the following values
+
+```
+SECRET_KEY=
+
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+POSTGRES_HOST=
+POSTGRES_PORT=
+POSTGRES_DB=jpdata
+```
+
+To start the server
+
 ```bash
 $ docker compose up --build -d
 ```
