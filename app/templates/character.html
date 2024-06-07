@@ -7,6 +7,7 @@
 
 {% block content %}
 <h1>Character</h1>
+<div id="left">
 <table id="character" border="1">
     <tr>
         <th>Literal:</th>
@@ -160,6 +161,7 @@
     {% endif %}
 </table>
 {% endif %}
+</div>
 
 {{ generic_form(mnemonic_form, "mnemonic") }}
 {{ generic_form(word_form, "word") }}

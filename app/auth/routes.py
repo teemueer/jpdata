@@ -1,4 +1,4 @@
-from flask import redirect, url_for, render_template, flash, request
+from flask import current_app, redirect, url_for, render_template, flash, request
 from flask_login import current_user, login_user, logout_user
 from urllib.parse import urlsplit
 from app import db
@@ -12,6 +12,10 @@ def register():
         return redirect(url_for("main.index"))
 
     form = RegistrationForm()
+
+    if current_app.debug:
+        del form.recaptcha
+
     if form.validate_on_submit():
         user = User(username=form.username.data, email=form.email.data)
         user.set_password(form.password.data)
@@ -28,6 +32,10 @@ def login():
         return redirect(url_for("main.index"))
 
     form = LoginForm()
+
+    if current_app.debug:
+        del form.recaptcha
+
     if form.validate_on_submit():
         user = db.session.query(User).where(User.username == form.username.data).scalar()
 

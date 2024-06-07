@@ -1,6 +1,9 @@
+#left {
+    float: left;
+}
+
 #character {
     max-width: 250px;
-    float: left;
 }
 
 #literal {
@@ -26,11 +29,9 @@
 }
 
 #mnemonic, #word {
-    float: left;
 }
 
 #indexes {
-    float: right;
 }
 
 #words, #links {

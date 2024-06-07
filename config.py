@@ -11,13 +11,11 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    RECAPTCHA_ENABLED = False
     SQLALCHEMY_DATABASE_URI = f"postgresql:///{Config.DATABASE_NAME}-dev"
 
 class TestingConfig(Config):
     TESTING = True
     WTF_CSRF_ENABLED = False
-    RECAPTCHA_ENABLED = False
     SQLALCHEMY_DATABASE_URI = f"postgresql:///{Config.DATABASE_NAME}-test"
 
 class ProductionConfig(Config):
@@ -27,7 +25,6 @@ class ProductionConfig(Config):
     POSTGRES_PORT = os.environ["POSTGRES_PORT"]
     POSTGRES_DB = os.environ["POSTGRES_DB"]
     SQLALCHEMY_DATABASE_URI = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
-    RECAPTCHA_ENABLED = True
 
 config = {
     "development": DevelopmentConfig,
