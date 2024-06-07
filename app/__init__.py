@@ -9,6 +9,7 @@ login.login_view = "auth.login"
 def create_app(config_name="default"):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
+    print(app.config)
 
     db.init_app(app)
     migrate.init_app(app, db)

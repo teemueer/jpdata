@@ -8,6 +8,8 @@
         <td>{{ field(size=30) }}</td>
         {% elif field.type == "TextAreaField" %}
         <td>{{ field(cols=40, rows=5) }}</td>
+        {% elif field.type == "RecaptchaField" %}
+        <td>{% if config.RECAPTCHA_ENABLED %}{{ field }}{% else %}disabled{% endif %}</td>
         {% else %}
         <td>{{ field }}</td>
         {% endif %}
