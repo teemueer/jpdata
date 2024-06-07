@@ -21,6 +21,7 @@ def create_app(config_name="default"):
     from app.words import bp as words_bp
     from app.dictionaries import bp as dictionaries_bp
     #from app.users import bp as users_bp
+    from app.errors import bp as errors_bp
     from app.cli import bp as cli_bp
 
     app.register_blueprint(main_bp)
@@ -30,6 +31,7 @@ def create_app(config_name="default"):
     app.register_blueprint(words_bp)
     app.register_blueprint(dictionaries_bp)
     #app.register_blueprint(users_bp)
+    app.register_blueprint(errors_bp)
     app.register_blueprint(cli_bp)
 
     return app

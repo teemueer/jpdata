@@ -64,6 +64,10 @@ def character(literal):
     mnemonic = db.session.scalar(q)
 
     mnemonic_form = MnemonicForm(obj=mnemonic)
+
+    if not mnemonic:
+        del mnemonic_form.remove
+
     if mnemonic_form.validate_on_submit():
         if mnemonic_form.remove.data:
             return redirect(url_for("mnemonics.delete", id=mnemonic.id, literal=literal))
