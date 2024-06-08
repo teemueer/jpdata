@@ -30,16 +30,27 @@ def idx(name, idx):
 
     form = NewWordForm()
     if form.validate_on_submit():
-        word = Word(
-            kanji=form.kanji.data,
-            kana=form.kana.data,
-            meaning=form.meaning.data,
-            user=current_user,
-        )
+        kanji = form.kanji.data
+        kana = form.kana.data
+        meaning = form.meaning.data
+
+        word = db.session.query(Word). \
+            where(Word.kanji == kanji, Word.kana == kana, Word.user == current_user).scalar()
+
+        if word:
+            word.meaning = meaning
+            flash("Word meaning updated")
+        else:
+            word = Word(
+                kanji=form.kanji.data,
+                kana=form.kana.data,
+                meaning=form.meaning.data,
+                user=current_user,
+            )
+            flash("Word saved")
 
         db.session.add(word)
         db.session.commit()
-        flash("Word saved")
         return redirect(url_for("dictionaries.idx", name=name, idx=idx))
 
     return render_template("dictionaries.html", name=name, dictionaries=dictionaries, form=form)

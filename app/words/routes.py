@@ -33,16 +33,28 @@ def words():
 
     word_form = NewWordForm()
     if word_form.validate_on_submit():
-        word = Word(
-            kanji=word_form.kanji.data,
-            kana=word_form.kana.data,
-            meaning=word_form.meaning.data,
-            user=current_user,
-        )
+        kanji = word_form.kanji.data
+        kana = word_form.kana.data
+        meaning = word_form.meaning.data
+
+        word = db.session.query(Word). \
+            where(Word.kanji == kanji, Word.kana == kana, Word.user == current_user).scalar()
+
+        if word:
+            word.meaning = meaning
+            flash("Word meaning updated")
+        else:
+            word = Word(
+                kanji=word_form.kanji.data,
+                kana=word_form.kana.data,
+                meaning=word_form.meaning.data,
+                user=current_user,
+            )
+            flash("Word saved")
 
         db.session.add(word)
         db.session.commit()
-        flash("Word saved")
+
         return redirect(url_for("words.words"))
 
     words = Word.filter(filters)

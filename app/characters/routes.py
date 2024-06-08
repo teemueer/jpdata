@@ -47,17 +47,29 @@ def character(literal):
         if character.literal not in word_form.kanji.data:
             flash("Kanji field must contain the current character", "error")
             return redirect(url_for("characters.character", literal=literal))
+        
+        kanji = word_form.kanji.data
+        kana = word_form.kana.data
+        meaning = word_form.meaning.data
 
-        word = Word(
-            kanji=word_form.kanji.data,
-            kana=word_form.kana.data,
-            meaning=word_form.meaning.data,
-            user=current_user,
-        )
+        word = db.session.query(Word). \
+            where(Word.kanji == kanji, Word.kana == kana, Word.user == current_user).scalar()
+
+        if word:
+            word.meaning = meaning
+            flash("Word meaning updated")
+        else:
+            word = Word(
+                kanji=word_form.kanji.data,
+                kana=word_form.kana.data,
+                meaning=word_form.meaning.data,
+                user=current_user,
+            )
+            flash("Word saved")
 
         db.session.add(word)
         db.session.commit()
-        flash("Word saved")
+
         return redirect(url_for("characters.character", literal=literal))
 
     q = current_user.mnemonics.select().where(Mnemonic.character == character)
@@ -98,7 +110,7 @@ def character(literal):
     idx = character.heisig6
     if idx:
         neighbor_characters = db.session.query(Character) \
-            .where(Character.heisig6.between(abs(idx-10), idx+10)).all()
+            .where(Character.heisig6.between(idx-10, idx+10)).all()
     else:
         neighbor_characters = []
 
