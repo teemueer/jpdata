@@ -16,6 +16,7 @@ str_64 = Annotated[str, 64]
 str_128 = Annotated[str, 128]
 str_256 = Annotated[str, 256]
 str_512 = Annotated[str, 512]
+str_1024 = Annotated[str, 1024]
 
 class Base(DeclarativeBase):
     time_created: Mapped[datetime] = mapped_column(index=True, default=lambda: datetime.now(timezone.utc))
@@ -32,6 +33,7 @@ class Base(DeclarativeBase):
             str_128: String(128),
             str_256: String(256),
             str_512: String(512),
+            str_1024: String(1024),
         }
     )
 

@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app import db
-from app.database import str_32, str_512
+from app.database import str_32, str_1024
 
 if TYPE_CHECKING:
     from app.users.model import User
@@ -14,7 +14,7 @@ class Word(db.Model):
 
     kanji: Mapped[str_32]
     kana: Mapped[str_32]
-    meaning: Mapped[str_512 | None]
+    meaning: Mapped[str_1024 | None]
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     user: Mapped["User"] = relationship(back_populates="words")
