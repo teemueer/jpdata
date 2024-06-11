@@ -36,9 +36,15 @@
     <tr>
         <th>Decomposition:</th>
         <td id="decomps">
-            {% for decomp in decomps %}
-            <div class="decomp">{{ decomp.decomp }}</div>
-            {% endfor %}
+            {%- for decomp in decomps -%}
+                {%- for c in decomp.decomp -%}
+                {%- if 0x4e00 <= c|ord <= 0x9fff -%}
+                <a href="{{ url_for('characters.character', literal=c) }}">{{ c }}</a>
+                {%- else -%}
+                {{ c }}
+                {%- endif -%}
+                {%- endfor -%}
+            {%- endfor -%}
         </td>
     </tr>
     <tr>

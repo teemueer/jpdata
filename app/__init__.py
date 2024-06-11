@@ -14,6 +14,10 @@ def create_app(config_name="default"):
     migrate.init_app(app, db)
     login.init_app(app)
 
+    from app.filters import register_filters
+
+    register_filters(app)
+
     from app.main import bp as main_bp
     from app.auth import bp as auth_bp
     from app.characters import bp as characters_bp
