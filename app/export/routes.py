@@ -30,10 +30,8 @@ def export_anki():
         ]
 
         words = [word for word in all_words if character.literal in word.kanji]
-        print(words)
         words_str = ""
         for word in words:
-            print(word.kanji)
             words_str += f'<details class="word"><summary><span class="kanji">{word.kanji}</span><span class="kana">【{word.kana}】</span></summary><div class="meaning">{word.meaning}</div></details>'
         card.append(words_str)
 
