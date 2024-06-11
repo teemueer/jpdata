@@ -81,7 +81,7 @@ def character(literal):
         del mnemonic_form.remove
 
     if mnemonic_form.validate_on_submit():
-        if mnemonic_form.remove.data:
+        if mnemonic and mnemonic_form.remove.data:
             return redirect(url_for("mnemonics.delete", id=mnemonic.id, literal=literal))
         
         if mnemonic:

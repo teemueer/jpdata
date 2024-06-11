@@ -20,6 +20,7 @@ def create_app(config_name="default"):
     from app.mnemonics import bp as mnemonics_bp
     from app.words import bp as words_bp
     from app.dictionaries import bp as dictionaries_bp
+    from app.export import bp as export_bp
     #from app.users import bp as users_bp
     from app.errors import bp as errors_bp
     from app.cli import bp as cli_bp
@@ -30,6 +31,7 @@ def create_app(config_name="default"):
     app.register_blueprint(mnemonics_bp)
     app.register_blueprint(words_bp)
     app.register_blueprint(dictionaries_bp)
+    app.register_blueprint(export_bp)
     #app.register_blueprint(users_bp)
     app.register_blueprint(errors_bp)
     app.register_blueprint(cli_bp)
