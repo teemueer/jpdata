@@ -34,7 +34,7 @@ def export_anki():
         for word in words:
             meaning = word.meaning
             meaning = meaning.replace("\n", "<br>").replace("\r", "") if meaning else ""
-            words_str += f'<details class="word"><summary><span class="kanji">{word.kanji}</span><span class="kana">【{word.kana}】</span></summary><div class="meaning">{word.meaning or ""}</div></details>'
+            words_str += f'<details class="word"><summary><span class="kanji">{word.kanji}</span><span class="kana">【{word.kana}】</span></summary><div class="meaning">{meaning}</div></details>'
         card.append(words_str)
 
         cards.append(card)
