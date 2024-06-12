@@ -147,7 +147,7 @@ def import_words():
             }
             stmt = stmt.on_conflict_do_update(constraint="uq_kanji_kana_user", set_=update_dict)
         else:
-            stmt.on_conflict_do_nothing()
+            stmt = stmt.on_conflict_do_nothing()
 
         db.session.execute(stmt)
         db.session.commit()
