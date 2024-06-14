@@ -28,7 +28,9 @@ def characters():
 @login_required
 def random():
     sq = sa.select(Mnemonic.character_literal).where(Mnemonic.user == current_user).subquery()
-    character = db.session.query(Character).where(Character.literal.not_in(sq)).order_by(sa.func.random()).first()
+    character = db.session.query(Character) \
+        .where(Character.literal.not_in(sq), Character.nelson_n != None) \
+        .order_by(sa.func.random()).first()
     return redirect(url_for("characters.character", literal=character.literal))
 
 @bp.route("/characters/<string:literal>", methods=["GET", "POST"])
