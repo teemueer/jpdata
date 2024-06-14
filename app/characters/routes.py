@@ -24,6 +24,13 @@ def characters():
     characters = db.session.execute(q).all()
     return render_template("characters.html", characters=characters)
 
+@bp.route("/characters/random")
+@login_required
+def random():
+    sq = sa.select(Mnemonic.character_literal).where(Mnemonic.user == current_user).subquery()
+    character = db.session.query(Character).where(Character.literal.not_in(sq)).order_by(sa.func.random()).first()
+    return redirect(url_for("characters.character", literal=character.literal))
+
 @bp.route("/characters/<string:literal>", methods=["GET", "POST"])
 @login_required
 def character(literal):
