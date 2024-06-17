@@ -38,7 +38,7 @@ $ docker compose up --build -d
 To initialize the database
 
 ```bash
-$ docker exec -it jpdata-web-1 flask character insert
-$ docker exec -it jpdata-web-1 flask decomp insert
-$ docker exec -it jpdata-web-1 flask heisig insert
+$ docker exec jpdata-web-1 flask character insert
+$ docker exec jpdata-web-1 flask decomp insert
+$ docker exec jpdata-web-1 flask heisig insert
 ```
