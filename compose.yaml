@@ -24,12 +24,5 @@ services:
     expose:
       - ${POSTGRES_PORT}
 
-  nginx:
-    build: ./services/nginx
-    ports:
-      - 80:80
-    depends_on:
-      - web
-
 volumes:
   jpdata:
