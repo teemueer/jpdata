@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}{{ character.literal }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/character.css') }}">
+{% endblock %}
+
+{%- block content %}
+<div class="row flex-nowrap m-0 p-0">
+  <div class="col-auto">
+    {%- include "character/_neighbors.html" %}
+  </div>
+  <div class="col-11">
+    {%- if current_user.is_authenticated %}
+    {% include "character/_literal_authenticated.html" %}
+    {%- else %}
+    {% include "character/_literal_anonymous.html" %}
+    {%- endif %}
+    {%- include "character/_info.html" %}
+    {%- include "character/_dics.html" %}
+    {%- include "character/_words.html" %}
+    {%- include "character/_links.html" %}
+  </div>
+</div>
+{%- endblock %}

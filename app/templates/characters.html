@@ -1,19 +1,39 @@
 {% extends "base.html" %}
+{% from "macros.html" import render_pagination %}
+
+{% block title %}Merkit{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/characters.css') }}">
 {% endblock %}
 
-{% block content %}
-<h1>Characters</h1>
-<div id="characters">
-    {% for character, mnemonic in characters %}
-    <div class="character">
-        <div class="literal {% if mnemonic %}has-mnemonic{% endif %}">
-            <a href="{{ url_for('characters.character', literal=character.literal) }}" title="{{ mnemonic.keyword or character.heisig_keyword or character.ucs }}">{{ character.literal }}</a>
-        </div>
-        <div class="index">{{ character.heisig6 }}</div>
+{%- block content %}
+  <h1>Merkit</h1>
+  <form class="row align-items-end mb-3" method="GET">
+    <div class="col-auto">
+      {{ form.search.label(class="form-label") }}
+      {{ form.search(class="form-control", autocomplete="off", autofocus="on") }}
     </div>
-    {% endfor %}
-</div>
-{% endblock %}
+    <div class="col-auto">
+      {{ form.limit_to.label(class="form-label") }}
+      {{ form.limit_to(class="form-select") }}
+    </div>
+    <div class="col-auto">
+      {{ form.per_page.label(class="form-label") }}
+      {{ form.per_page(class="form-select") }}
+    </div>
+    <div class="col-auto mt-3">
+      <button class="btn btn-primary">Rajaa</button>
+    </div>
+  </form>
+  <div id="characters" class="d-flex flex-wrap">
+    {%- for character in characters %}
+    <div class="character text-center m-2 w-10">
+      <div class="literal display-5">
+        <a href="{{ url_for('characters.character', literal=character.literal) }}">{{ character.literal }}</a>
+      </div>
+    </div>
+    {%- endfor %}
+  </div>
+  {{ render_pagination(characters, "characters.characters") }}
+{%- endblock %}

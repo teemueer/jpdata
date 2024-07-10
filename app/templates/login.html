@@ -1,8 +1,26 @@
 {% extends "base.html" %}
-{% from "macros.html" import generic_form %}
+
+{% block title %}Sisäänkirjautuminen{% endblock %}
 
 {% block content %}
-<h1>Login</h1>
-{{ generic_form(form) }}
-<p>New User? <a href="{{ url_for('auth.register') }}">Click to Register!</a></p>
+  <h1>Sisäänkirjautuminen</h1>
+  <form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="form-group col-5">
+      {{ form.username.label(class="form-label") }}
+      {{ form.username(class="form-control", autocomplete="off", autofocus="on") }}
+    </div>
+    <div class="form-group col-5 mb-3">
+      {{ form.password.label(class="form-label") }}
+      {{ form.password(class="form-control") }}
+    </div>
+    {%- if form.recaptcha %}
+    <div class="form-group mb-3">
+      {{ form.recaptcha() }}
+    </div>
+    {%- endif %}
+    <div class="form-group">
+      {{ form.submit(class="btn btn-primary") }}
+    </div>
+  </form>
 {% endblock %}

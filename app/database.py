@@ -1,11 +1,10 @@
 from typing_extensions import Annotated
-from sqlalchemy import String, select, nulls_last, or_, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, registry
+from sqlalchemy import String, select, func, or_
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, registry, aliased
 from datetime import datetime, timezone
 from flask import request
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask_login import current_user
 
 str_1 = Annotated[str, 1]
 str_4 = Annotated[str, 4]
@@ -18,9 +17,17 @@ str_256 = Annotated[str, 256]
 str_512 = Annotated[str, 512]
 str_1024 = Annotated[str, 1024]
 
+
 class Base(DeclarativeBase):
-    time_created: Mapped[datetime] = mapped_column(index=True, default=lambda: datetime.now(timezone.utc))
-    time_updated: Mapped[datetime | None] = mapped_column(index=True, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    time_created: Mapped[datetime] = mapped_column(
+        index=True, default=lambda: datetime.now(timezone.utc)
+    )
+
+    time_updated: Mapped[datetime | None] = mapped_column(
+        index=True,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
 
     registry = registry(
         type_annotation_map={
@@ -38,45 +45,47 @@ class Base(DeclarativeBase):
     )
 
     @classmethod
-    def filter(cls, form, user_required=True):
+    def find(cls, form):
         q = select(cls)
 
-        if user_required:
-            q = q.where(cls.user == current_user)
-
         filters = dict(zip(form._fields, [getattr(form, f).data for f in form._fields]))
+        where = []
 
-        if search := filters.get("search"):
-            where = []
-            for column in cls.searchable_columns():
-                where.append(column.ilike(f"%{search}%"))
-            q = q.where(or_(*where))
+        search = filters.get("search")
+        if search:
+            for column in cls.search_from():
+                if isinstance(column, tuple):
+                    related_model, related_column = column
+                    q = q.join(related_model)
+                    where.append(
+                        func.replace(
+                            getattr(related_model, related_column), ".", ""
+                        ).ilike(f"%{search}%")
+                    )
+                else:
+                    where.append(column.ilike(f"%{search}%"))
 
-        order_by = filters.get("order_by", "time_updated")
-        desc = filters.get("desc")
-        if column := getattr(cls, order_by):
-            if column.type.python_type == str:
-                column = func.lower(column)
-            column = column.desc() if desc else column
-            q = q.order_by(nulls_last(column), cls.id.desc())
+        limit_to = filters.get("limit_to")
+        if column := getattr(cls, limit_to):
+            q = q.filter(column != None).order_by(column)
+
+        if where:
+            q = q.filter(or_(*where))
 
         page = request.args.get("page", 1, type=int)
-        per_page = filters.get("per_page")
+        per_page = filters.get("per_page", 100)
 
-        results = db.paginate(
+        return db.paginate(
             q,
             page=page,
             per_page=per_page,
             error_out=False,
         )
 
-        return results
-
-    def to_dict(self):
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
-    
-    def searchable_columns(self):
+    @classmethod
+    def search_from(cls):
         return []
+
 
 db = SQLAlchemy(model_class=Base)
 migrate = Migrate()

@@ -1,217 +1,200 @@
 {% extends "base.html" %}
-{% from "macros.html" import generic_form %}
+{% from "macros.html" import render_pagination %}
+
+{% block title %}{{ character.literal }}{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/character.css') }}">
 {% endblock %}
 
-{% block content %}
-<h1>Character</h1>
+{% set neighbors = neighbors|map(attribute="literal") %}
+{% set decompositions = decompositions|map(attribute="decomposition")|list %}
+{% set onyomi = readings|selectattr("r_type", "==", "ja_on")|map(attribute="reading")|list %}
+{% set kunyomi = readings|selectattr("r_type", "==", "ja_kun")|map(attribute="reading")|list %}
+{% set nanori = readings|selectattr("r_type", "==", "nanori")|map(attribute="reading")|list %}
+{% set pinyin = readings|selectattr("r_type", "==", "pinyin")|map(attribute="reading")|list %}
+{% set heisig = character.heisig_keyword %}
+{% set english = meanings|rejectattr("meaning", "==", heisig)|map(attribute="meaning")|list %}
 
-<div id="character-information">
-<table id="character" border="1">
-    <tr>
-        <th>Literal:</th>
-        <td id="literal">{{ character.literal }}</td>
-    </tr>
-    {%- if character.jis208 %}
-    <tr>
-        <th>JIS:</th>
-        <td id="jis208" class="index">{{ character.jis208 }}</td>
-    </tr>
-    {%- else %}
-    {%- if character.jis212 %}
-    <tr>
-        <th>JIS212:</th>
-        <td id="jis212" class="index">{{ character.jis212 }}</td>
-    </tr>
-    {%- endif %}
-    {%- if character.jis213 %}
-    <tr>
-        <th>JIS213:</th>
-        <td id="jis213" class="index">{{ character.jis213 }}</td>
-    </tr>
-    {%- endif %}
-    {%- endif %}
-    <tr>
-        <th>Decomposition:</th>
-        <td id="decomps">
-            {%- for decomp in decomps -%}
-                {%- for c in decomp.decomp -%}
-                {%- if 0x4e00 <= c|ord <= 0x9fff -%}
-                <a href="{{ url_for('characters.character', literal=c) }}">{{ c }}</a>
-                {%- else -%}
-                {{ c }}
-                {%- endif -%}
-                {%- endfor -%}
-            {%- endfor -%}
-        </td>
-    </tr>
-    <tr>
-        <th>Radical:</th>
-        <td>{{ character.radical }}</td>
-    </tr>
-    <tr>
-        <th>Stroke count:</th>
-        <td class="stroke-count">{{ character.stroke_count }}</td>
-    </tr>
-    <tr>
-        <th>Classification:</th>
-        <td class="grade">
-            {% set grade = character.grade %}
-            {% if not grade %}
-            Rare
-            {% elif grade == 1 %}
-            First Grade
-            {% elif grade == 2 %}
-            Second Grade
-            {% elif grade == 3 %}
-            Third Grade
-            {% elif grade == 4 %}
-            Fourth Grade
-            {% elif grade == 5 %}
-            Fifth Grade
-            {% elif grade == 6 %}
-            Sixth Grade
-            {% elif grade == 8 %}
-            General-Use
-            {% elif grade == 9 %}
-            Name-Only
-            {% elif grade == 10 %}
-            Name-Only (variant)
-            {% endif %}
-        </td>
-    </tr>
-    {% if character.heisig_keyword %}
-    <tr>
-        <th>Heisig keyword:</th>
-        <td id="heisig-keyword">{{ character.heisig_keyword }}</td>
-    </tr>
-    {% endif %}
-    {% if meanings %}
-    <tr>
-        <th>Meanings:</th>
-        {% set meanings = meanings|map(attribute="meaning") %}
-        <td id="meanings">{{ meanings|join(", ") }}</td>
-    </tr>
-    {% endif %}
-    {% set onyomi = readings|selectattr("r_type", "==", "ja_on")|map(attribute="reading")|list %}
-    {% if onyomi %}
-    <tr>
-        <th>Onyomi:</th>
-        <td id="onyomi">{{ onyomi|join("、") }}</td>
-    </tr>
-    {% endif %}
-    {% set kunyomi = readings|selectattr("r_type", "==", "ja_kun")|map(attribute="reading")|list %}
-    {% if kunyomi %}
-    <tr>
-        <th>Kunyomi:</th>
-        <td id="kunyomi">
-            {% for kun in kunyomi %}
-            <div class="kunyomi">{{ kun }}</div>
-            {% endfor %}
-        </td>
-    </tr>
-    {% endif %}
-    {% if variants %}
-    <tr>
-        <th>Variants:</th>
-        <td id="variants">
-            {% for variant in variants %}
-            <a class="variant" href="{{ url_for('characters.character', literal=variant.literal) }}">{{ variant.literal }}</a>
-            {% endfor %}
-        </td>
-    </tr>
-    {% endif %}
-</table>
-
-{% if character.nelson_n %}
-<table id="indexes" border="1">
-    <tr>
-        <th>Dictionary</th>
-        <th>Index</th>
-    </tr>
-    {% if character.heisig6 %}
-    <tr>
-        <td class="dictionary">Heisig 6th</td>
-        <td class="index">{{ character.heisig6 }}</td>
-    </tr>
-    {% elif character.heisig %}
-    <tr>
-        <td class="dictionary">Heisig 5th</td>
-        <td class="index">{{ character.heisig }}</td>
-    </tr>
-    {% endif %}
-    {% if character.nelson_n %}
-    <tr>
-        <td class="dictionary">New Nelson</td>
-        <td class="index">
-            <a href="{{ url_for('dictionaries.idx', name='nelson_n', idx=character.nelson_n) }}">{{ character.nelson_n }}</a>
-        </td>
-    </tr>
-    {% endif %}
-    {% if character.halpern_kkd %}
-    <tr>
-        <td class="dictionary">Halpern KKD</td>
-        <td class="index">
-            <a href="{{ url_for('dictionaries.idx', name='halpern_kkd', idx=character.halpern_kkd) }}">{{ character.halpern_kkd }}</a>
-        </td>
-    </tr>
-    {% endif %}
-    {% if character.halpern_kkld_2ed %}
-    <tr>
-        <td class="dictionary">Halpern KKLD</td>
-        <td class="index">
-            <a href="{{ url_for('dictionaries.idx', name='halpern_kkld_2ed', idx=character.halpern_kkld_2ed) }}">{{ character.halpern_kkld_2ed }}</a>
-        </td>
-    </tr>
-    {% endif %}
-</table>
-{% endif %}
-</div>
-
-<div id="forms">
-{{ generic_form(mnemonic_form, "mnemonic") }}
-{{ generic_form(word_form, "word") }}
-</div>
-
-<div id="neighbor-characters">
-    {% for nc in neighbor_characters %}
-    <div>
-        {% if nc.literal == character.literal %}
-        {{ nc.literal }}
-        {% else %}
-        <a href="{{ url_for('characters.character', literal=nc.literal) }}">{{ nc.literal }}</a>
-        {% endif %}
+{%- block content %}
+  <div class="row m-1 align-items-center">
+    <div id="literal" class="col-auto display-1">{{ character.literal }}</div>
+    {%- if finnish or heisig or meanings %}
+    <div class="col-auto">
+      {%- if finnish %}
+      <div class="row">
+        <div id="finnish" class="col-auto fs-4">
+          <a data-bs-toggle="modal" data-bs-target="#keyword-modal">{{ finnish }}</a>
+        </div>
+      </div>
+      {%- endif %}
+      {%- if heisig %}
+      <div class="row">
+        <div id="heisig-keyword" class="col-auto {% if finnish %}fs-5{% else %}fs-4{% endif %}">{{ heisig }}</div>
+      </div>
+      {%- endif %}
+      {%- if not (finnish or heisig) and meanings %}
+      <div class="row">
+        <div id="english" class="col-auto fs-4">{{ english|join(", ") }}</div>
+      </div>
+      {%- endif %}
     </div>
-    {% endfor %}
-</div>
+    {%- endif %}
+  </div>
 
-{% if words %}
-<div id="words">
-    <h3>Words</h3>
-    {% for word in words %}
-    <span class="word">
-        <a href="{{ url_for('words.word', id=word.id, literal=character.literal) }}">{{ word.kanji }}【{{ word.kana }}】</a>
-    </span>
-    {% endfor %}
-</div>
-{% endif %}
+  <div class="modal fade" id="keyword-modal" tabindex="-1" aria-labelledby="keyword-modal-label" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="keyword-modal-label">Keyword</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <input>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<div id="links">
-    <h3>Links</h3>
-    <span>
-        <a href="https://kanji.koohii.com/study/kanji/{{ character.literal }}" target="_blank">Kanji Koohii</a>
-    </span>
-    <span>
-        <a href="https://www.kanjipedia.jp/search?k={{ character.literal }}&kt=1&sk=leftHand" target="_blank">Kanjipedia</a>
-    </span>
-    <span>
-        <a href="https://dictionary.goo.ne.jp/word/kanji/{{ character.literal }}" target="_blank">Goo</a>
-    </span>
-    <span>
-        <a href="https://en.wiktionary.org/wiki/{{ character.literal }}" target="_blank">Wiktionary</a>
-    </span>
-</table>
+  <div class="row m-1">
+    <div id="stroke-count" class="col-auto">{{ character.stroke_count }}</div>
+    <div id="radical" class="col-auto">{{ character.radical }}</div>
+    <div id="grade" class="col-auto">
+      {%- set grade = character.grade -%}
+      {%- if not grade -%}
+      Harvinainen
+      {%- elif grade == 1 -%}
+      1. kouluvuosi
+      {%- elif grade == 2 -%}
+      2. kouluvuosi
+      {%- elif grade == 3 -%}
+      3. kouluvuosi
+      {%- elif grade == 4 -%}
+      4. kouluvuosi
+      {%- elif grade == 5 -%}
+      5. kouluvuosi
+      {%- elif grade == 6 -%}
+      6. kouluvuosi
+      {%- elif grade == 8 -%}
+      Yleinen
+      {%- elif grade == 9 -%}
+      Nimiin varattu
+      {%- elif grade == 10 -%}
+      Nimiin varattu (variantti)
+      {%- endif -%}
+    </div>
+  </div>
 
-{% endblock %}
+  {%- if character.parts and request.cookies.get("krad") != "false" %}
+  <div class="row m-1">
+    <div id="krad" class="col-auto"><span>{{ character.parts }}</span></div>
+  </div>
+  {%- endif %}
+
+  {%- if decompositions and request.cookies.get("cjk") != "false" %}
+  <div class="row m-1">
+    <div id="cjk" class="col-auto">
+      {%- for decomposition in decompositions -%}
+      <span class="decomposition col-auto fs-5 me-3">
+        {%- for c in decomposition -%}
+        {%- if 0x4e00 <= c|ord <= 0x9fff -%}
+        <a href="{{ url_for('characters.character', literal=c) }}">{{ c }}</a>
+        {%- else -%}
+        {{ c }}
+        {%- endif -%}
+        {%- endfor -%}
+      </span>
+      {%- endfor %}
+    </div>
+  </div>
+  {%- endif %}
+
+  {%- if variants and request.cookies.get("variants") != "false" %}
+  <div class="row m-1">
+    <div id="variants" class="col-auto">
+      {%- for variant in variants -%}
+      <a class="variant fs-5" href="{{ url_for('characters.character', literal=variant.literal) }}">{{ variant.literal }}</a>
+      {%- endfor -%}
+    </div>
+  </div>
+  {%- endif %}
+
+  {%- if onyomi %}
+  <div class="row m-1">
+    <div id="onyomi" class="col-auto">{{ onyomi|join("・") }}</div>
+  </div>
+  {%- endif %}
+
+  {%- if kunyomi %}
+  <div class="row m-1">
+    <div id="kunyomi" class="col-auto">{{ kunyomi|join("・") }}</div>
+  </div>
+  {%- endif %}
+
+  {%- if nanori and request.cookies.get("nanori", "false") != "false" %}
+  <div class="row m-1">
+    <div id="nanori" class="col-auto">{{ nanori|join("・") }}</div>
+  </div>
+  {%- endif %}
+
+  {%- if pinyin and request.cookies.get("pinyin", "false") != "false" %}
+  <div class="row m-1">
+    <div id="pinyin" class="col-auto">{{ pinyin|join("・") }}</div>
+  </div>
+  {%- endif %}
+
+  <table class="table table-bordered table-sm w-auto m-3">
+    <tbody>
+      {%- if character.heisig6 and request.cookies.get("heisig") != "false" %}
+      <tr>
+        <td class="fw-lighter">Remembering the Kanji, 6. painos</td>
+        <td id="heisig6" class="font-monospace">{{ character.heisig6 }}</td>
+      </tr>
+      {%- elif character.heisig and request.cookies.get("heisig") != "false" %}
+      <tr>
+        <td class="fw-lighter">Remembering the Kanji, 5. painos</td>
+        <td id="heisig" class="font-monospace">{{ character.heisig }}</td>
+      </tr>
+      {%- endif %}
+      {%- if character.halpern_kkd and request.cookies.get("halpern_kkd") != "false" %}
+      <tr>
+        <td class="fw-lighter">Kodansha Kanji Dictionary</td>
+        <td id="halpern_kkd" class="font-monospace">
+          <a href="{{ url_for('dics.dic_idx', name='halpern_kkd', idx=character.halpern_kkd) }}">{{ character.halpern_kkd }}</a>
+        </td>
+      </tr>
+      {%- endif %}
+      {%- if character.nelson_n and request.cookies.get("nelson_n") != "false" %}
+      <tr>
+        <td class="fw-lighter">New Nelson</td>
+        <td id="nelson_n" class="font-monospace">
+          <a href="{{ url_for('dics.dic_idx', name='nelson_n', idx=character.nelson_n) }}">{{ character.nelson_n }}</a>
+        </td>
+      </tr>
+      {%- endif %}
+      {%- if character.jis208 and request.cookies.get("jis") != "false" %}
+      <tr>
+        <td class="fw-lighter">JIS X 0208</td>
+        <td id="jis208" class="font-monospace">{{ character.jis208 }}</td>
+      </tr>
+      {%- else %}
+      {%- if character.jis212 and request.cookies.get("jis") != "false" %}
+      <tr>
+        <td class="fw-lighter">JIS X 0212</td>
+        <td id="jis212" class="font-monospace">{{ character.jis212 }}</td>
+      </tr>
+      {%- endif %}
+      {%- if character.jis213 and request.cookies.get("jis") != "false" %}
+      <tr>
+        <td class="fw-lighter">JIS X 0213</td>
+        <td id="jis213" class="font-monospace">{{ character.jis213 }}</td>
+      </tr>
+      {%- endif %}
+      {%- endif %}
+    </tbody>
+  </table>
+{%- endblock %}

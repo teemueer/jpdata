@@ -1,0 +1,18 @@
+<table class="table table-bordered table-sm table-hover w-auto m-3">
+  <thead>
+    <tr>
+      <th>Sana</th>
+      <th>Lukutapa</th>
+      <th>Merkitys</th>
+    </tr>
+  </thead>
+  <tbody>
+    {%- for word in words %}
+    <tr>
+      <td class="text-nowrap">{{ word.kanji }}</td>
+      <td class="text-nowrap">{{ word.kana }}</td>
+      <td>{{ word.meaning or "" }}</td>
+    </tr>
+    {%- endfor %}
+  </tbody>
+</table>

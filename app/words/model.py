@@ -7,6 +7,7 @@ from app.database import str_32, str_1024
 if TYPE_CHECKING:
     from app.users.model import User
 
+
 class Word(db.Model):
     __tablename__ = "words"
 
@@ -22,7 +23,3 @@ class Word(db.Model):
     __table_args__ = (
         UniqueConstraint("kanji", "kana", "user_id", name="uq_kanji_kana_user"),
     )
-
-    @classmethod
-    def searchable_columns(cls):
-        return [cls.kanji, cls.kana, cls.meaning] 

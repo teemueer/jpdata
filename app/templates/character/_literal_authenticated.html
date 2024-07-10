@@ -1,0 +1,38 @@
+<div class="row align-items-center m-1">
+  <div id="literal" class="col-auto display-1">{{ character.literal }}</div>
+  <div class="col">
+    <div class="row fs-5 fw-bold" data-bs-toggle="modal" data-bs-target="#keyword-modal">
+      {%- if mnemonic.keyword -%}
+      {{ mnemonic.keyword }}
+      {%- elif character.my_keyword %}
+      {{ character.my_keyword }}
+      {%- else -%}
+      &lt;lisää avainsana&gt;
+      {%- endif -%}
+    </div>
+    <div class="row fst-italic" data-bs-toggle="modal" data-bs-target="#story-modal">
+      {%- if mnemonic.story -%}
+      {{ mnemonic.story }}
+      {%- else -%}
+      &lt;lisää muistisääntö&gt;
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% from "character/_modal.html" import modal %}
+
+{{ modal(keyword_form, "keyword-modal") }}
+{{ modal(story_form, "story-modal") }}
+
+<script>
+const modal_ids = ["keyword", "story"];
+for (const modal_id of modal_ids) {
+  const modal = document.getElementById(`${modal_id}-modal`);
+  const input = document.getElementById(modal_id);
+  modal.addEventListener("shown.bs.modal", () => {
+    input.focus();
+    input.select();
+  });
+}
+</script>

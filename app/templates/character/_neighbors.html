@@ -1,0 +1,9 @@
+{%- for neighbor in neighbors %}
+<div class="row">
+  {%- if neighbor.literal == character.literal %}
+  <strong>{{ neighbor.literal }}</strong>
+  {%- else %}
+  <a href="{{ url_for('characters.character', literal=neighbor.literal) }}">{{ neighbor.literal }}</a>
+  {%- endif %}
+</div>
+{%- endfor %}

@@ -7,8 +7,7 @@ from datetime import datetime, timezone
 from app import db
 from app.words import bp
 from app.words.model import Word
-from app.words.forms import NewWordForm, UpdateWordForm, WordFiltersForm
-from app.forms import DeleteForm, ImportForm
+from app.forms import ImportForm
 
 words_schema = {
     "type": "array",
@@ -23,101 +22,6 @@ words_schema = {
     },
 }
 
-@bp.route("/words", methods=["GET", "POST"])
-@login_required
-def words():
-    filters = WordFiltersForm(request.args)
-    if not filters.validate():
-        flash("Invalid filters", "error")
-        return redirect(url_for("words.words"))
-
-    word_form = NewWordForm()
-    if word_form.validate_on_submit():
-        kanji = word_form.kanji.data
-        kana = word_form.kana.data
-        meaning = word_form.meaning.data
-
-        word = db.session.query(Word). \
-            where(Word.kanji == kanji, Word.kana == kana, Word.user == current_user).scalar()
-
-        if word:
-            word.meaning = meaning
-            flash("Word meaning updated")
-        else:
-            word = Word(
-                kanji=word_form.kanji.data,
-                kana=word_form.kana.data,
-                meaning=word_form.meaning.data,
-                user=current_user,
-            )
-            flash("Word saved")
-
-        db.session.add(word)
-        db.session.commit()
-
-        return redirect(url_for("words.words"))
-
-    words = Word.filter(filters)
-
-    return render_template(
-        "words.html",
-        words=words,
-        word_form=word_form,
-        filters=filters,
-    )
-
-@bp.route("/words/<int:id>", methods=["GET", "POST"])
-@login_required
-def word(id):
-    word = db.session.get(Word, id)
-    if not word:
-        abort(404)
-    elif word.user != current_user:
-        abort(401)
-
-    literal = request.args.get("literal")
-    
-    form = UpdateWordForm(obj=word)
-    if form.remove.data:
-        return redirect(url_for("words.delete", id=word.id, literal=literal))
-    elif form.validate_on_submit():
-        word.kanji = form.kanji.data
-        word.kana = form.kana.data
-        word.meaning = form.meaning.data
-
-        db.session.add(word)
-        db.session.commit()
-        flash("Word updated")
-
-        literal = request.args.get("literal")
-        if literal:
-            return redirect(url_for("characters.character", literal=literal))
-        return redirect(url_for("words.words"))
-
-    return render_template("word.html", word=word, form=form)
-
-@bp.route("/words/delete/<int:id>", methods=["GET", "POST"])
-@login_required
-def delete(id):
-    word = db.session.get(Word, id)
-    if not word:
-        abort(404)
-    elif word.user != current_user:
-        abort(401)
-
-    form = DeleteForm()
-    if form.validate_on_submit():
-        if form.yes.data:
-            db.session.delete(word)
-            db.session.commit()
-            flash("Word deleted")
-        
-        literal = request.args.get("literal")
-        if literal:
-            return redirect(url_for("characters.character", literal=literal))
-        return redirect(url_for("words.words"))
-
-    return render_template("delete.html", obj=word, form=form)
 
 @bp.route("/words/import", methods=["GET", "POST"])
 @login_required
@@ -135,7 +39,6 @@ def import_words():
 
         for word in words:
             word["user_id"] = current_user.id
-            word["meaning"] = word.get("story")
 
         stmt = postgres.insert(Word).values(words)
         if form.update.data:
@@ -145,13 +48,17 @@ def import_words():
                 "meaning": getattr(stmt.excluded, "meaning"),
                 "time_updated": datetime.now(timezone.utc),
             }
-            stmt = stmt.on_conflict_do_update(constraint="uq_kanji_kana_user", set_=update_dict)
+            stmt = stmt.on_conflict_do_update(
+                constraint="uq_kanji_kana_user", set_=update_dict
+            )
         else:
             stmt = stmt.on_conflict_do_nothing()
+
+        print(words)
 
         db.session.execute(stmt)
         db.session.commit()
         flash("Words imported")
-        return redirect(url_for("words.words"))
+        return redirect(url_for("main.index"))
 
     return render_template("import.html", title="Import words", form=form)

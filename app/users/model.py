@@ -7,11 +7,12 @@ from app.database import str_64, str_128, str_256
 
 if TYPE_CHECKING:
     from app.mnemonics.model import Mnemonic
-    from app.words.model import Word
+
 
 @login.user_loader
 def load_user(id):
     return db.session.get(User, int(id))
+
 
 class User(UserMixin, db.Model):
     __tablename__ = "users"

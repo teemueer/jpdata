@@ -1,137 +1,167 @@
-import sqlalchemy as sa
-from flask import render_template, abort, flash, redirect, url_for
-from flask_login import login_required, current_user
+import logging
+from flask import request, flash, redirect, url_for, render_template, abort, Response
+from flask_login import current_user
+from sqlalchemy.orm import joinedload
 from app import db
 from app.characters import bp
 from app.characters.models import Character
+from app.characters.form import CharactersForm, KeywordForm, StoryForm
 from app.mnemonics.model import Mnemonic
-from app.mnemonics.forms import MnemonicForm
 from app.words.model import Word
-from app.words.forms import NewWordForm
+
 
 @bp.route("/characters")
-@login_required
 def characters():
-    q = sa.select(Character, Mnemonic) \
-        .join(
-            Mnemonic,
-            sa.and_(
-                Character.literal == Mnemonic.character_literal,
-                Mnemonic.user == current_user
-            ), isouter=True
-        ).where(Character.heisig6 != None) \
-        .order_by(Character.heisig6)
-    characters = db.session.execute(q).all()
-    return render_template("characters.html", characters=characters)
+    form = CharactersForm(request.args)
 
-@bp.route("/characters/random")
-@login_required
-def random():
-    sq = sa.select(Mnemonic.character_literal).where(Mnemonic.user == current_user).subquery()
-    character = db.session.query(Character) \
-        .where(Character.literal.not_in(sq), Character.nelson_n != None) \
-        .order_by(sa.func.random()).first()
-    return redirect(url_for("characters.character", literal=character.literal))
+    logging.warning(
+        f"{request.remote_addr}: {form.search.data}/{form.limit_to.data}/{form.per_page.data}"
+    )
 
-@bp.route("/characters/<string:literal>", methods=["GET", "POST"])
-@login_required
-def character(literal):
-    character = db.session.query(Character).where(Character.literal == literal).scalar()
-    if not character:
-        abort(404)
+    if not form.validate():
+        flash("Virheelliset suodattimet", "danger")
+        return redirect(url_for("characters.characters"))
 
-    decomps = db.session.scalars(character.decomps.select()).all()
-    meanings = db.session.scalars(character.meanings.select()).all()
-    readings = db.session.scalars(character.readings.select()).all()
+    characters = Character.find(form)
+    return render_template("characters.html", form=form, characters=characters)
 
-    variants = []
-    for variant in db.session.scalars(character.variants.select()):
-        column = getattr(Character, variant.var_type)
-        variant_character = db.session.query(Character).where(column == variant.variant).scalar()
-        if variant_character not in variants:
-            variants.append(variant_character)
 
-    word_form = NewWordForm()
-    if word_form.validate_on_submit():
-        if character.literal not in word_form.kanji.data:
-            flash("Kanji field must contain the current character", "error")
-            return redirect(url_for("characters.character", literal=literal))
-        
-        kanji = word_form.kanji.data
-        kana = word_form.kana.data
-        meaning = word_form.meaning.data
+def character_authenticated(character):
+    mnemonic = (
+        db.session.query(Mnemonic)
+        .filter(
+            Mnemonic.character_literal == character.literal,
+            Mnemonic.user == current_user,
+        )
+        .scalar()
+    )
 
-        word = db.session.query(Word). \
-            where(Word.kanji == kanji, Word.kana == kana, Word.user == current_user).scalar()
+    words = (
+        db.session.query(Word)
+        .filter(
+            Word.kanji.ilike(f"%{character.literal}%"),
+            Word.user == current_user,
+        )
+        .order_by(Word.kana)
+        .all()
+    )
 
-        if word:
-            word.meaning = meaning
-            flash("Word meaning updated")
-        else:
-            word = Word(
-                kanji=word_form.kanji.data,
-                kana=word_form.kana.data,
-                meaning=word_form.meaning.data,
-                user=current_user,
-            )
-            flash("Word saved")
+    keyword_form = KeywordForm()
+    if keyword_form.submit.data and keyword_form.validate_on_submit():
+        if not keyword_form.keyword.data.strip():
+            keyword_form.keyword.data = character.my_keyword
 
-        db.session.add(word)
-        db.session.commit()
-
-        return redirect(url_for("characters.character", literal=literal))
-
-    q = current_user.mnemonics.select().where(Mnemonic.character == character)
-    mnemonic = db.session.scalar(q)
-
-    mnemonic_form = MnemonicForm(obj=mnemonic)
-
-    if not mnemonic:
-        del mnemonic_form.remove
-
-    if mnemonic_form.validate_on_submit():
-        if mnemonic and mnemonic_form.remove.data:
-            return redirect(url_for("mnemonics.delete", id=mnemonic.id, literal=literal))
-        
         if mnemonic:
-            mnemonic.keyword = mnemonic_form.keyword.data
-            mnemonic.story = mnemonic_form.story.data
+            mnemonic.keyword = keyword_form.keyword.data
         else:
             mnemonic = Mnemonic(
-                keyword=mnemonic_form.keyword.data,
-                story=mnemonic_form.story.data,
+                character_literal=character.literal,
+                keyword=keyword_form.keyword.data,
                 user=current_user,
-                character=character,
             )
 
         db.session.add(mnemonic)
         db.session.commit()
-        flash("Mnemonic saved")
-        return redirect(url_for("characters.character", literal=literal))
-    
-    words = db.session.scalars(
-        current_user.words.select() \
-            .where(
-                Word.kanji.like(f"%{literal}%")
-            ).order_by(Word.kana)
-        ).all()
-    
-    idx = character.heisig6
-    if idx:
-        neighbor_characters = db.session.query(Character) \
-            .where(Character.heisig6.between(idx-10, idx+10)).all()
-    else:
-        neighbor_characters = []
+        return redirect(url_for("characters.character", literal=character.literal))
 
-    return render_template(
-        "character.html",
-        character=character,
-        meanings=meanings,
-        decomps=decomps,
-        readings=readings,
-        variants=variants,
-        word_form=word_form,
-        mnemonic_form=mnemonic_form,
-        words=words,
-        neighbor_characters=neighbor_characters,
-    )
+    story_form = StoryForm()
+    if story_form.submit.data and story_form.validate_on_submit():
+        if not story_form.story.data.strip():
+            story_form.story.data = None
+
+        if mnemonic:
+            mnemonic.story = story_form.story.data
+        else:
+            mnemonic = Mnemonic(
+                character_literal=character.literal,
+                keyword=character.my_keyword,
+                story=story_form.story.data,
+                user=current_user,
+            )
+
+        db.session.add(mnemonic)
+        db.session.commit()
+        return redirect(url_for("characters.character", literal=character.literal))
+
+    if mnemonic:
+        keyword_form.keyword.data = mnemonic.keyword
+        story_form.story.data = mnemonic.story
+    else:
+        keyword_form.keyword.data = character.my_keyword
+
+    return mnemonic, words, keyword_form, story_form
+
+def character_anonymous(character):
+    return render_template("anonymous/character.html")
+
+
+@bp.route("/character/<string:literal>", methods=["GET", "POST"])
+def character(literal):
+    character = db.session.get(Character, literal)
+    if not character:
+        abort(404)
+
+    if current_user.is_authenticated:
+        result = character_authenticated(character)
+        if type(result) == Response:
+            return result
+        mnemonic, words, keyword_form, story_form = result
+
+    readings = db.session.scalars(character.readings.select()).all()
+    meanings = db.session.scalars(character.meanings.select()).all()
+    decompositions = db.session.scalars(character.decompositions.select()).all()
+
+    variants = []
+    for variant in db.session.scalars(character.variants.select()):
+        column = getattr(Character, variant.var_type)
+        variant_character = (
+            db.session.query(Character).filter(column == variant.variant).scalar()
+        )
+        if variant_character not in variants:
+            variants.append(variant_character)
+
+    neighbors = []
+    neighbor_type = request.cookies.get("neighbors", "heisig6")
+    column = getattr(Character, neighbor_type)
+    if idx := getattr(character, neighbor_type):
+        neighbors = (
+            db.session.query(Character)
+            .filter(column.between(idx - 10, idx + 10))
+            .order_by(column)
+            .all()
+        )
+
+    context = {
+        "character": character,
+        "readings": readings,
+        "meanings": meanings,
+        "decompositions": decompositions,
+        "variants": variants,
+        "neighbors": neighbors,
+    }
+
+    if current_user.is_authenticated:
+        context["keyword_form"] = keyword_form
+        context["story_form"] = story_form
+        context["mnemonic"] = mnemonic
+        context["words"] = words
+        return render_template("authenticated/character.html", **context)
+    else:
+        return render_template("anonymous/character.html", **context)
+
+    """
+    if current_user.is_authenticated:
+        return render_template(
+            "authenticated/character.html",
+            character=character,
+            mnemonic=mnemonic,
+            keyword_form=keyword_form,
+            story_form=story_form,
+            meanings=meanings,
+            readings=readings,
+            decompositions=decompositions,
+            variants=variants,
+            words=words,
+            neighbors=neighbors,
+        )
+    """

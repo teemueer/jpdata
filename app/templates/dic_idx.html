@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}{{ name }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dic_idx.css') }}">
+{% endblock %}
+
+{% block content %}
+<div id="pdf-container" data-name="{{ name }}_pdf" data-from="{{ page_from }}" data-to="{{ page_to }}"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+<script src="{{ url_for('static', filename='js/dic_pdf.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dic_idx.js') }}"></script>
+{% endblock %}

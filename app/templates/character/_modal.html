@@ -1,0 +1,21 @@
+{% macro modal(form, name, title) %}
+<div class="modal fade" id="{{ name }}" tabindex="-1" aria-labelledby="{{ name }}-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="POST" class="modal-content">
+      <div class="modal-body">
+          {{ form.hidden_tag() }}
+          {%- for field in form %}
+          {%- if field.widget.input_type != 'hidden' and field.type != "SubmitField" %}
+          {{ field.label(class="form-label") }}
+          {{ field(class="form-control mb-3", value=field.data or "", spellcheck="false") }}
+          {%- endif %}
+          {%- endfor %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Peruuta</button>
+        {{ form.submit(class="btn btn-primary") }}
+      </div>
+    </form>
+  </div>
+</div>
+{% endmacro %}

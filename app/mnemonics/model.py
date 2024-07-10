@@ -8,12 +8,13 @@ if TYPE_CHECKING:
     from app.characters.models import Character
     from app.users.model import User
 
+
 class Mnemonic(db.Model):
     __tablename__ = "mnemonics"
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    keyword: Mapped[str_64]
+    keyword: Mapped[str_64 | None]
     story: Mapped[str_512 | None]
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
@@ -25,7 +26,3 @@ class Mnemonic(db.Model):
     __table_args__ = (
         UniqueConstraint("user_id", "character_literal", name="uq_user_character"),
     )
-
-    @classmethod
-    def searchable_columns(cls):
-        return [cls.keyword, cls.story, cls.character_literal] 

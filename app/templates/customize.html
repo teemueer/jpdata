@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Asetukset{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/customize.css') }}">
+{% endblock %}
+
+{%- macro radio(field) -%}
+<div class="row form-check form-switch">
+  <div class="col-auto">
+    {{ field(class="form-check-input", role="switch") }}
+  </div>
+  <div class="col-auto">
+    {{ field.label(class="form-label") }}
+  </div>
+</div>
+{%- endmacro -%}
+
+{% block content %}
+  <h1>Asetukset</h1>
+  <p>Asetukset tallennetaan selaimen evästeisiin.</p>
+  <hr>
+  <form id="customize-form" method="POST" class="align-items-center">
+    {{ form.hidden_tag() }}
+    <div class="row">
+      <div class="col-auto">
+        {{ form.theme.label(class="form-label") }}:
+      </div>
+      {%- for item in form.theme %}
+      <div class="col-auto form-check">
+        {{ item(class='form-check-input') }}
+        {{ item.label(class='form-check-label') }}
+      </div>
+      {%- endfor %}
+    </div>
+    {{ radio(form.nanori) }}
+    {{ radio(form.pinyin) }}
+    {{ radio(form.krad) }}
+    {{ radio(form.cjk) }}
+    {{ radio(form.variants) }}
+    {{ radio(form.heisig) }}
+    {{ radio(form.kanjikirja) }}
+    {{ radio(form.halpern_kkd) }}
+    {{ radio(form.nelson_n) }}
+    {{ radio(form.jis) }}
+    <div class="row">
+      <div class="col-auto p-2">
+        {{ form.neighbors.label(class="") }}:
+      </div>
+      <div class="col-auto">
+        {{ form.neighbors(class="form-select") }}
+      </div>
+    </div>
+    <hr>
+    <p>
+      Mikäli omistat sanakirjan PDF-muodossa voit lisätä sen tänne, jolloin klikatessasi indeksiä sanakirjasta näytetään
+      sivut koskien kyseistä kanji-merkkiä.
+      Saatat joutua muuttamaan <em>offset</em>-arvoa mikäli omistamasi sanakirjan sivut eivät täsmää.
+
+      Tiedostot tallentuvat ainoastaan selaimesi muistiin, eivät palvelimelle.
+    </p>
+    <div class="dic row align-items-center mb-2" data-name="halpern_kkd_pdf">
+      <div class="col-1">
+        <input id="dic1" type="checkbox" class="form-check-input">
+      </div>
+      <div class="col-3">
+        <label for="dic1" class="form-check-label">Kodansha Kanji Dictionary</label>
+      </div>
+      <div class="col-4">
+        <input type="file" accept=".pdf" class="form-control" disabled>
+      </div>
+      <div class="col-1 d-none d-md-block">
+        {{ form.halpern_kkd_offset.label }}
+      </div>
+      <div class="col-1">
+        {{ form.halpern_kkd_offset(min=0, size=5) }}
+      </div>
+    </div>
+    <div class="dic row align-items-center mb-2" data-name="nelson_n_pdf">
+      <div class="col-1">
+        <input id="dic2" type="checkbox" class="form-check-input">
+      </div>
+      <div class="col-3">
+        <label for="dic2" class="form-check-label">New Nelson</label>
+      </div>
+      <div class="col-4">
+        <input type="file" accept=".pdf" class="form-control" disabled>
+      </div>
+      <div class="col-1 d-none d-md-block">
+        {{ form.nelson_n_offset.label }}
+      </div>
+      <div class="col-1">
+        {{ form.nelson_n_offset(min=0, size=5) }}
+      </div>
+    </div>
+    <div class="dic row align-items-center mb-2" data-name="kanjikirja_pdf">
+      <div class="col-1">
+        <input id="dic2" type="checkbox" class="form-check-input">
+      </div>
+      <div class="col-3">
+        <label for="dic2" class="form-check-label">Suuri kanjikirja: Uudistettu laitos</label>
+      </div>
+      <div class="col-4">
+        <input type="file" accept=".pdf" class="form-control" disabled>
+      </div>
+      <div class="col-1 d-none d-md-block">
+        {{ form.kanjikirja_offset.label }}
+      </div>
+      <div class="col-1">
+        {{ form.kanjikirja_offset(min=0, size=5) }}
+      </div>
+    </div>
+    <hr>
+    <button class="btn btn-primary mt-3">Tallenna asetukset</button>
+  </form>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+  <script src="{{ url_for('static', filename='js/dic_pdf.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/customize.js') }}"></script>
+{% endblock %}

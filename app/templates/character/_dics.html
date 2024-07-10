@@ -1,0 +1,59 @@
+
+<table class="table table-bordered table-sm w-auto m-3">
+  <tbody>
+    {%- if character.heisig6 and request.cookies.get("heisig") != "false" %}
+    <tr>
+      <td class="fw-lighter">Remembering the Kanji, 6. painos</td>
+      <td id="heisig6" class="font-monospace">{{ character.heisig6 }}</td>
+    </tr>
+    {%- elif character.heisig and request.cookies.get("heisig") != "false" %}
+    <tr>
+      <td class="fw-lighter">Remembering the Kanji, 5. painos</td>
+      <td id="heisig" class="font-monospace">{{ character.heisig }}</td>
+    </tr>
+    {%- endif %}
+    {%- if character.kanjikirja and request.cookies.get("kanjikirja") != "false" %}
+    <tr>
+      <td class="fw-lighter">Suuri kanjikirja: Uudistettu laitos</td>
+      <td id="halpern_kkd" class="font-monospace">
+        <a href="{{ url_for('dics.dic_idx', name='kanjikirja', idx=character.kanjikirja) }}">{{ character.kanjikirja }}</a>
+      </td>
+    </tr>
+    {%- endif %}
+    {%- if character.halpern_kkd and request.cookies.get("halpern_kkd") != "false" %}
+    <tr>
+      <td class="fw-lighter">Kodansha Kanji Dictionary</td>
+      <td id="halpern_kkd" class="font-monospace">
+        <a href="{{ url_for('dics.dic_idx', name='halpern_kkd', idx=character.halpern_kkd) }}">{{ character.halpern_kkd }}</a>
+      </td>
+    </tr>
+    {%- endif %}
+    {%- if character.nelson_n and request.cookies.get("nelson_n") != "false" %}
+    <tr>
+      <td class="fw-lighter">New Nelson</td>
+      <td id="nelson_n" class="font-monospace">
+        <a href="{{ url_for('dics.dic_idx', name='nelson_n', idx=character.nelson_n) }}">{{ character.nelson_n }}</a>
+      </td>
+    </tr>
+    {%- endif %}
+    {%- if character.jis208 and request.cookies.get("jis") != "false" %}
+    <tr>
+      <td class="fw-lighter">JIS X 0208</td>
+      <td id="jis208" class="font-monospace">{{ character.jis208 }}</td>
+    </tr>
+    {%- else %}
+    {%- if character.jis212 and request.cookies.get("jis") != "false" %}
+    <tr>
+      <td class="fw-lighter">JIS X 0212</td>
+      <td id="jis212" class="font-monospace">{{ character.jis212 }}</td>
+    </tr>
+    {%- endif %}
+    {%- if character.jis213 and request.cookies.get("jis") != "false" %}
+    <tr>
+      <td class="fw-lighter">JIS X 0213</td>
+      <td id="jis213" class="font-monospace">{{ character.jis213 }}</td>
+    </tr>
+    {%- endif %}
+    {%- endif %}
+  </tbody>
+</table>

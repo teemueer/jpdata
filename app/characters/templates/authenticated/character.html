@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/character.css') }}">
+{% endblock %}
+
+{% set neighbors = neighbors|map(attribute="literal") %}
+{% set decompositions = decompositions|map(attribute="decomposition")|list %}
+{% set onyomi = readings|selectattr("r_type", "==", "ja_on")|map(attribute="reading")|list %}
+{% set kunyomi = readings|selectattr("r_type", "==", "ja_kun")|map(attribute="reading")|list %}
+{% set nanori = readings|selectattr("r_type", "==", "nanori")|map(attribute="reading")|list %}
+{% set pinyin = readings|selectattr("r_type", "==", "pinyin")|map(attribute="reading")|list %}
+{% set heisig = character.heisig_keyword %}
+{% set english = meanings|rejectattr("meaning", "==", heisig)|map(attribute="meaning")|list %}
+
+{% macro modal(form, name) %}
+<div class="modal fade" id="{{ name }}" tabindex="-1" aria-labelledby="{{ name }}-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="POST" class="modal-content">
+      <div class="modal-body">
+          {{ form.hidden_tag() }}
+          {%- for field in form %}
+          {%- if field.widget.input_type != 'hidden' and field.type != "SubmitField" %}
+          {{ field.label(class="form-label") }}
+          {{ field(class="form-control mb-3", value=field.data or "", autocomplete="off", spellcheck="false") }}
+          {%- endif %}
+          {%- endfor %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Peruuta</button>
+        {{ form.submit(class="btn btn-primary") }}
+      </div>
+    </form>
+  </div>
+</div>
+{% endmacro %}
+
+{% block content %}
+<div class="row align-items-center m-1">
+  <div id="literal" class="col-auto display-1">{{ character.literal }}</div>
+  <div class="col">
+    <div class="keyword row fs-5 fw-bold" data-bs-toggle="modal" data-bs-target="#keyword-modal">{{ keyword_form.keyword.data or "<lisää avainsana>" }}</div>
+    <div class="story row fst-italic" data-bs-toggle="modal" data-bs-target="#story-modal">{{ story_form.story.data or "<lisää muistisääntö>" }}</div>
+  </div>
+</div>
+
+<div class="row m-1">
+  <div id="stroke-count" class="col-auto">{{ character.stroke_count }}</div>
+  <div id="radical" class="col-auto">{{ character.radical }}</div>
+  <div id="grade" class="col-auto">
+    {%- set grade = character.grade -%}
+    {%- if not grade -%}
+    Harvinainen
+    {%- elif grade == 1 -%}
+    1. kouluvuosi
+    {%- elif grade == 2 -%}
+    2. kouluvuosi
+    {%- elif grade == 3 -%}
+    3. kouluvuosi
+    {%- elif grade == 4 -%}
+    4. kouluvuosi
+    {%- elif grade == 5 -%}
+    5. kouluvuosi
+    {%- elif grade == 6 -%}
+    6. kouluvuosi
+    {%- elif grade == 8 -%}
+    Yleinen
+    {%- elif grade == 9 -%}
+    Nimiin varattu
+    {%- elif grade == 10 -%}
+    Nimiin varattu (variantti)
+    {%- endif -%}
+  </div>
+</div>
+
+{%- if character.parts and request.cookies.get("krad") != "false" %}
+<div class="row m-1">
+  <div id="krad" class="col-auto"><span>{{ character.parts }}</span></div>
+</div>
+{%- endif %}
+
+{%- if decompositions and request.cookies.get("cjk") != "false" %}
+<div class="row m-1">
+  <div id="cjk" class="col-auto">
+    {%- for decomposition in decompositions -%}
+    <span class="decomposition col-auto fs-5 me-3">
+      {%- for c in decomposition -%}
+      {%- if 0x4e00 <= c|ord <= 0x9fff -%}
+      <a href="{{ url_for('characters.character', literal=c) }}">{{ c }}</a>
+      {%- else -%}
+      {{ c }}
+      {%- endif -%}
+      {%- endfor -%}
+    </span>
+    {%- endfor %}
+  </div>
+</div>
+{%- endif %}
+
+{%- if variants and request.cookies.get("variants") != "false" %}
+<div class="row m-1">
+  <div id="variants" class="col-auto">
+    {%- for variant in variants -%}
+    <a class="variant fs-5" href="{{ url_for('characters.character', literal=variant.literal) }}">{{ variant.literal }}</a>
+    {%- endfor -%}
+  </div>
+</div>
+{%- endif %}
+
+{%- if onyomi %}
+<div class="row m-1">
+  <div id="onyomi" class="col-auto">{{ onyomi|join("・") }}</div>
+</div>
+{%- endif %}
+
+{%- if kunyomi %}
+<div class="row m-1">
+  <div id="kunyomi" class="col-auto">{{ kunyomi|join("・") }}</div>
+</div>
+{%- endif %}
+
+{%- if nanori and request.cookies.get("nanori", "false") != "false" %}
+<div class="row m-1">
+  <div id="nanori" class="col-auto">{{ nanori|join("・") }}</div>
+</div>
+{%- endif %}
+
+{%- if pinyin and request.cookies.get("pinyin", "false") != "false" %}
+<div class="row m-1">
+  <div id="pinyin" class="col-auto">{{ pinyin|join("・") }}</div>
+</div>
+{%- endif %}
+
+<table class="table table-bordered table-sm w-auto m-3">
+  <tbody>
+    {%- if character.heisig6 and request.cookies.get("heisig") != "false" %}
+    <tr>
+      <td class="fw-lighter">Remembering the Kanji, 6. painos</td>
+      <td id="heisig6" class="font-monospace">{{ character.heisig6 }}</td>
+    </tr>
+    {%- elif character.heisig and request.cookies.get("heisig") != "false" %}
+    <tr>
+      <td class="fw-lighter">Remembering the Kanji, 5. painos</td>
+      <td id="heisig" class="font-monospace">{{ character.heisig }}</td>
+    </tr>
+    {%- endif %}
+    {%- if character.halpern_kkd and request.cookies.get("halpern_kkd") != "false" %}
+    <tr>
+      <td class="fw-lighter">Kodansha Kanji Dictionary</td>
+      <td id="halpern_kkd" class="font-monospace">
+        <a href="{{ url_for('dics.dic_idx', name='halpern_kkd', idx=character.halpern_kkd) }}">{{ character.halpern_kkd }}</a>
+      </td>
+    </tr>
+    {%- endif %}
+    {%- if character.nelson_n and request.cookies.get("nelson_n") != "false" %}
+    <tr>
+      <td class="fw-lighter">New Nelson</td>
+      <td id="nelson_n" class="font-monospace">
+        <a href="{{ url_for('dics.dic_idx', name='nelson_n', idx=character.nelson_n) }}">{{ character.nelson_n }}</a>
+      </td>
+    </tr>
+    {%- endif %}
+    {%- if character.jis208 and request.cookies.get("jis") != "false" %}
+    <tr>
+      <td class="fw-lighter">JIS X 0208</td>
+      <td id="jis208" class="font-monospace">{{ character.jis208 }}</td>
+    </tr>
+    {%- else %}
+    {%- if character.jis212 and request.cookies.get("jis") != "false" %}
+    <tr>
+      <td class="fw-lighter">JIS X 0212</td>
+      <td id="jis212" class="font-monospace">{{ character.jis212 }}</td>
+    </tr>
+    {%- endif %}
+    {%- if character.jis213 and request.cookies.get("jis") != "false" %}
+    <tr>
+      <td class="fw-lighter">JIS X 0213</td>
+      <td id="jis213" class="font-monospace">{{ character.jis213 }}</td>
+    </tr>
+    {%- endif %}
+    {%- endif %}
+  </tbody>
+</table>
+
+{{ modal(keyword_form, "keyword-modal") }}
+{{ modal(story_form, "story-modal") }}
+
+<script>
+const modal_ids = ["keyword", "story"];
+for (const modal_id of modal_ids) {
+  const modal = document.getElementById(`${modal_id}-modal`);
+  const input = document.getElementById(modal_id);
+  modal.addEventListener("shown.bs.modal", () => {
+    input.focus();
+    input.select();
+  });
+}
+</script>
+{% endblock %}
